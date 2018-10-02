@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "googlemaps-v3-utility-library-latest": "^1.0.1",
+    "jquery": "^3.*"
+  }
+}

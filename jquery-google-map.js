@@ -12,9 +12,9 @@
 	var settings;
 	var element;
 	var map;
-	var markers = new Array();
+	var markers = [];
 	var markerCluster;
-	var clustersOnMap = new Array();
+	var clustersOnMap = [];
 	var clusterListener;
 
 	var methods = {
@@ -30,8 +30,8 @@
 					borderBottomSpacing: 6,
 					height: 150,
 					width: 340,
-                    offsetX: -21,
-                    offsetY: -21
+					offsetX: -21,
+					offsetY: -21
 				},
 				marker: {
 					height: 40,
@@ -72,18 +72,18 @@
 		},
 
 		addMarkers: function (options) {
-			markers = new Array();
+			markers = [];
 			settings.locations = options.locations;
 			settings.contents = options.contents;
 			settings.types = options.types;
 
 			renderElements();
 		}
-	}
+	};
 
 	$.fn.google_map = function (method) {
 		if (methods[method]) {
-			return methods[ method ].apply(this, Array.prototype.slice.call(arguments, 1));
+			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 		} else if (typeof method === 'object' || !method) {
 			return methods.init.apply(this, arguments);
 		} else {
@@ -96,9 +96,9 @@
 			zoom: settings.zoom,
 			styles: settings.styles,
 			mapTypeId: google.maps.MapTypeId.ROADMAP,
-			scrollwheel: false,
+			scrollwheel: true,
 			draggable: true,
-			mapTypeControl: false,
+			mapTypeControl: true,
 			panControl: false,
 			zoomControl: true,
 			zoomControlOptions: {
@@ -107,9 +107,9 @@
 			}
 		};
 
-        if (settings.center !== undefined) {
-            mapOptions.center = new google.maps.LatLng(settings.center.latitude, settings.center.longitude);
-        }
+		if (settings.center !== undefined) {
+			mapOptions.center = new google.maps.LatLng(settings.center.latitude, settings.center.longitude);
+		}
 
 		map = new google.maps.Map($(element)[0], mapOptions);
 
@@ -128,13 +128,11 @@
 			}
 		}
 
-        if (settings.center === undefined) {
-            var bound = new google.maps.LatLngBounds();
-            for (var i in settings.markers) {
-                bound.extend(new google.maps.LatLng(settings.markers[i].latitude, settings.markers[i].longitude));
-            }
-            map.fitBounds(bound);
-        }
+		var bound = new google.maps.LatLngBounds();
+		for (var i in settings.markers) {
+			bound.extend(new google.maps.LatLng(settings.markers[i].latitude, settings.markers[i].longitude));
+		}
+		map.fitBounds(bound);
 
 		var dragFlag = false;
 		var start = 0;
@@ -164,19 +162,19 @@
 			el.addEventListener('touchstart', thisTouchStart, true);
 			el.addEventListener('touchend', thisTouchEnd, true);
 			el.addEventListener('touchmove', thisTouchMove, true);
-		} else if (el.attachEvent){
+		} else if (el.attachEvent) {
 			el.attachEvent('touchstart', thisTouchStart);
 			el.attachEvent('touchend', thisTouchEnd);
 			el.attachEvent('touchmove', thisTouchMove);
 		}
 
 		google.maps.event.addListener(map, 'zoom_changed', function () {
-            $.each(markers, function (index, marker) {
-                if (marker.infobox !== undefined) {
-                    marker.infobox.close();
-                    marker.infobox.isOpen = false;
-                }
-            });
+			$.each(markers, function (index, marker) {
+				if (marker.infobox !== undefined) {
+					marker.infobox.close();
+					marker.infobox.isOpen = false;
+				}
+			});
 		});
 
 		renderElements();
@@ -187,14 +185,14 @@
 			return false;
 		}
 
-		if (clustersOnMap.length == 0) {
+		if (clustersOnMap.length === 0) {
 			return false;
 		}
 
 		var val = false;
 
 		$.each(clustersOnMap, function (index, cluster_on_map) {
-			if (cluster_on_map.getCenter() == cluster.getCenter()) {
+			if (cluster_on_map.getCenter() === cluster.getCenter()) {
 				val = cluster_on_map;
 			}
 		});
@@ -205,16 +203,22 @@
 	function addClusterOnMap(cluster) {
 		// Hide all cluster's markers
 		$.each(cluster.getMarkers(), (function () {
-			if (this.marker.isHidden == false) {
+			if (!this.marker.isHidden) {
 				this.marker.isHidden = true;
 				this.marker.close();
 			}
 		}));
 
-		var newCluster = new InfoBox({
+		sum = 0;
+
+		$.each(cluster.getMarkers(), function (index, marker) {
+			sum += marker.marker.amount;
+		});
+
+		cluster.cluster = new InfoBox({
 			markers: cluster.getMarkers(),
 			draggable: true,
-			content: '<div class="clusterer"><div class="clusterer-inner">' + cluster.getMarkers().length + '</div></div>',
+			content: '<div class="clusterer"><div class="clusterer-inner">' + sum + '</div></div>',
 			disableAutoPan: true,
 			pixelOffset: new google.maps.Size(-21, -21),
 			position: cluster.getCenter(),
@@ -223,8 +227,6 @@
 			enableEventPropagation: true,
 			pane: "floatPane"
 		});
-
-		cluster.cluster = newCluster;
 
 		cluster.markers = cluster.getMarkers();
 		cluster.cluster.open(map, cluster.marker);
@@ -236,7 +238,7 @@
 			// Create invisible markers on the map
 			var args = {
 				position: new google.maps.LatLng(markerObject.latitude, markerObject.longitude),
-				map: map,
+				map: map
 			};
 
 			if (settings.transparentMarkerImage) {
@@ -256,7 +258,7 @@
 					pixelOffset: new google.maps.Size(settings.infowindow.offsetX, settings.infowindow.offsetY, settings.infowindow.offsetX, settings.infowindow.offsetY),
 					position: new google.maps.LatLng(markerObject.latitude, markerObject.longitude),
 					isHidden: false,
-                    closeBoxURL: "",
+					closeBoxURL: "",
 					pane: "floatPane",
 					enableEventPropagation: false
 				});
@@ -264,50 +266,60 @@
 				marker.infobox.isOpen = false;
 			}
 
- 			// Create infobox for marker
+			// Create infobox for marker
 			marker.marker = new InfoBox({
 				draggable: true,
 				content: markerObject.marker_content,
 				disableAutoPan: true,
-				pixelOffset: new google.maps.Size(-settings.marker.width/2, -settings.marker.height),
+				pixelOffset: new google.maps.Size(-settings.marker.width / 2, -settings.marker.height),
 				position: new google.maps.LatLng(markerObject.latitude, markerObject.longitude),
 				closeBoxURL: "",
 				isHidden: false,
-				pane: "floatPane",
-				enableEventPropagation: true
+				pane: "mapPane",
+				enableEventPropagation: true,
 			});
+
+			marker.marker.amount = markerObject.amount;
 
 			// Handle logic for opening/closing info windows
 			marker.marker.isHidden = false;
 			marker.marker.open(map, marker);
 			markers.push(marker);
 
+
 			google.maps.event.addListener(marker, 'click', function (e) {
-                if (marker.infobox !== undefined) {
-                    var curMarker = this;
+				if (marker.infobox !== undefined) {
+					var curMarker = this;
 
-                    $.each(markers, function (index, marker) {
-                        if (marker !== curMarker) {
-                            marker.infobox.close();
-                            marker.infobox.isOpen = false;
-                        }
-                    });
+					$.each(markers, function (index, marker) {
+						if (marker !== curMarker) {
+							marker.infobox.close();
+							marker.infobox.isOpen = false;
+						}
+					});
 
-                    if (curMarker.infobox) {
-                        if (curMarker.infobox.isOpen === false) {
-                            curMarker.infobox.open(map, this);
-                            curMarker.infobox.isOpen = true;
-                        } else {
-                            curMarker.infobox.close();
-                            curMarker.infobox.isOpen = false;
-                        }
-                    }
-                }
+					if (curMarker.infobox) {
+						if (curMarker.infobox.isOpen === false) {
+							curMarker.infobox.open(map, this);
+							curMarker.infobox.isOpen = true;
+
+							map.setCenter(curMarker.getPosition());
+							map.setOptions({scrollwheel: false});
+						} else {
+							curMarker.infobox.close();
+							curMarker.infobox.isOpen = false;
+
+							map.setOptions({scrollwheel: true});
+						}
+					}
+				}
 			});
 		});
 
+		$('.map-marker').parent().addClass('click-through');
+
 		markerCluster = new MarkerClusterer(map, markers, {
-            gridSize: settings.cluster.gridSize,
+			gridSize: settings.cluster.gridSize,
 			styles: [
 				{
 					textColor: 'transparent',
@@ -318,10 +330,10 @@
 			]
 		});
 
-		clustersOnMap = new Array();
+		clustersOnMap = [];
 		clusterListener = google.maps.event.addListener(markerCluster, 'clusteringend', function (clusterer) {
 			var availableClusters = clusterer.getClusters();
-			var activeClusters = new Array();
+			var activeClusters = [];
 
 			$.each(availableClusters, function (index, cluster) {
 				if (cluster.getMarkers().length > 1) {
@@ -334,10 +346,16 @@
 					var val = isClusterOnMap(clustersOnMap, cluster);
 
 					if (val !== false) {
-						val.cluster.setContent('<div class="clusterer"><div class="clusterer-inner">' + cluster.getMarkers().length + '</div></div>');
+						sum = 0;
+
+						$.each(cluster.getMarkers(), function (index, marker) {
+							sum += marker.marker.amount;
+						});
+
+						val.cluster.setContent('<div class="clusterer"><div class="clusterer-inner">' + sum + '</div></div>');
 						val.markers = cluster.getMarkers();
 						$.each(cluster.getMarkers(), (function (index, marker) {
-							if (marker.marker.isHidden == false) {
+							if (marker.marker.isHidden) {
 								marker.marker.isHidden = true;
 								marker.marker.close();
 							}
@@ -348,7 +366,7 @@
 				} else {
 					// Show all markers without the cluster
 					$.each(cluster.getMarkers(), function (index, marker) {
-						if (marker.marker.isHidden == true) {
+						if (marker.marker.isHidden) {
 							marker.marker.open(map, this);
 							marker.marker.isHidden = false;
 						}
@@ -357,7 +375,7 @@
 					// Remove old cluster
 					$.each(clustersOnMap, function (index, cluster_on_map) {
 						if (cluster !== undefined && cluster_on_map !== undefined) {
-							if (cluster_on_map.getCenter() == cluster.getCenter()) {
+							if (cluster_on_map.getCenter() === cluster.getCenter()) {
 								// Show all cluster's markers
 								cluster_on_map.cluster.close();
 								clustersOnMap.splice(index, 1);
@@ -367,13 +385,13 @@
 				}
 			});
 
-			var newClustersOnMap = new Array();
+			var newClustersOnMap = [];
 
 			$.each(clustersOnMap, function (index, clusterOnMap) {
 				var remove = true;
 
 				$.each(availableClusters, function (index2, availableCluster) {
-					if (availableCluster.getCenter() == clusterOnMap.getCenter()) {
+					if (availableCluster.getCenter() === clusterOnMap.getCenter()) {
 						remove = false;
 					}
 				});
@@ -388,13 +406,13 @@
 			clustersOnMap = newClustersOnMap;
 		});
 
-        $(document).on('click', '.infobox .close', function(e) {
-            e.preventDefault();
+		$(document).on('click', '.infobox .close', function (e) {
+			e.preventDefault();
 
-            $.each(markers, function(index, marker) {
-                marker.infobox.isHidden = true;
-                marker.infobox.close();
-            });
-        });
+			$.each(markers, function (index, marker) {
+				marker.infobox.isHidden = true;
+				marker.infobox.close();
+			});
+		});
 	}
 })(jQuery);
