@@ -2,7 +2,7 @@
  * jQuery Google Map
  *
  * @author Pragmatic Mates, http://pragmaticmates.com
- * @version 1.2.0
+ * @version 1.2.1
  * @license GPL 2
  * @link https://github.com/Cashewz/jquery-google-map
  */
@@ -225,7 +225,7 @@
 			closeBoxURL: "",
 			isHidden: false,
 			enableEventPropagation: true,
-			pane: "floatPane"
+			pane: "mapPane"
 		});
 
 		cluster.markers = cluster.getMarkers();
@@ -315,8 +315,6 @@
 				}
 			});
 		});
-
-		$('.map-marker').parent().addClass('click-through');
 
 		markerCluster = new MarkerClusterer(map, markers, {
 			gridSize: settings.cluster.gridSize,
