@@ -1,4 +1,8 @@
 {
+  "name": "jquery-google-map",
+  "description": "jQuery Google Maps plugin",
+  "homepage": "https://github.com/Cashewz/jquery-google-map",
+  "main": "jquery-google-map.js",
   "version": "1.2.1",
   "dependencies": {
     "googlemaps-v3-utility-library-latest": "^1.0.1",
