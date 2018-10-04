@@ -2,7 +2,7 @@
  * jQuery Google Map
  *
  * @author Pragmatic Mates, http://pragmaticmates.com
- * @version 1.2.2
+ * @version 1.2.3
  * @license GPL 2
  * @link https://github.com/Cashewz/jquery-google-map
  */
@@ -286,6 +286,17 @@
 			marker.marker.open(map, marker);
 			markers.push(marker);
 
+			if (typeof settings.mouseOverEvent !== 'undefined') {
+				google.maps.event.addListener(marker, 'mouseover', function (e) {
+					$(document).trigger(settings.mouseOverEvent, [this]);
+				});
+			}
+
+			if (typeof settings.mouseOutEvent !== 'undefined') {
+				google.maps.event.addListener(marker, 'mouseout', function(e) {
+					$(document).trigger(settings.mouseOutEvent, [this]);
+				});
+			}
 
 			google.maps.event.addListener(marker, 'click', function (e) {
 				if (marker.infobox !== undefined) {
