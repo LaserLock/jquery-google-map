@@ -2,7 +2,7 @@
  * jQuery Google Map
  *
  * @author Pragmatic Mates, http://pragmaticmates.com
- * @version 1.2.3
+ * @version 1.2.4
  * @license GPL 2
  * @link https://github.com/Cashewz/jquery-google-map
  */
