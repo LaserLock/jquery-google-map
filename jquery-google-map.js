@@ -132,7 +132,10 @@
 		for (var i in settings.markers) {
 			bound.extend(new google.maps.LatLng(settings.markers[i].latitude, settings.markers[i].longitude));
 		}
-		map.fitBounds(bound);
+
+		if (settings.markers.length > 0) {
+			map.fitBounds(bound);
+		}
 
 		var dragFlag = false;
 		var start = 0;
@@ -251,7 +254,7 @@
 			var marker = new google.maps.Marker(args);
 
 			// Create infobox for infowindow
-			if (markerObject.content) {
+			if (markerObject.content || markerObject.content_url) {
 				marker.infobox = new InfoBox({
 					content: markerObject.content,
 					disableAutoPan: true,
@@ -278,6 +281,27 @@
 				pane: "mapPane",
 				enableEventPropagation: true,
 			});
+
+			if (markerObject.content_url) {
+				google.maps.event.addListener(marker, 'click', function (target, elem) {
+					key = markerObject.latitude + '_' + markerObject.longitude;
+
+					url = markerObject.content_url.replace('%id%', ids[key].toString());
+
+					$.ajax({
+						url: url,
+						contentType: 'html',
+						success: function (data) {
+							if (ids[key].length > 2) {
+								data = '<div class="map-window-scroll">' + data + '</div>';
+							}
+
+							marker.infobox.setContent(data);
+							marker.infobox.open(map, marker);
+						}
+					});
+				});
+			}
 
 			marker.marker.amount = markerObject.amount;
 
