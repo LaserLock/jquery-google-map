@@ -45,7 +45,11 @@
 			});
 
 			settings = $.extend({}, defaults, options);
-
+			
+			if (options.resetMarkers !== undefined && options.resetMarkers === true) {
+				markers = [];
+			}
+			
 			loadMap();
 
 			if (options.callback) {
